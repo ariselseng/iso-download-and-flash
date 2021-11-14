@@ -62,6 +62,7 @@ check_for_commands() {
 }
 
 parse_params() {
+    VERBOSE=0
     # default values of variables set from params
     force=0
     target=''
@@ -132,13 +133,6 @@ if [[ "$iso_size" = "0" ]];then
     die "invalid iso, failed to get size"
 fi
 
-
-msg "${GREEN}Read parameters:${NOFORMAT}"
-msg "- force: ${force}"
-msg "- device: ${device}"
-msg "- url: ${url}"
-msg "- size: ${iso_size}"
-
 if [[ ! -z ${target} ]];then
     if [ -d "${target}" ];then
         url_basename=$(basename $(curl -L --head -w '%{url_effective}' $url 2>/dev/null | tail -n1))
@@ -150,7 +144,14 @@ if [[ ! -z ${target} ]];then
         target="${target}"/"$url_basename"
     fi
     
-    msg "- target file: ${target}"
+fi
+
+if [[ ${VERBOSE} = 1 ]];then
+    msg "${GREEN}Parameters:${NOFORMAT}"
+    msg "- device: ${device}"
+    msg "- url: ${url}"
+    msg "- size: ${iso_size}"
+    [[ ! -z ${target} ]] && msg "- target file: ${target}"
 fi
 
 if [[ ! -z ${target} ]] && [[ -f ${target} ]];then
@@ -184,8 +185,8 @@ fi
 sudo ls &> /dev/null
 
 if [[ ${skipdownload} = 1 ]];then
-  sudo dd if="$target" of="$device" bs=1M status=progress conv=fsync oflag=direct;
-  exit
+    sudo dd if="$target" of="$device" bs=1M status=progress conv=fsync oflag=direct;
+    exit
 fi
 
 if [[ ! -z "$target" ]];then
